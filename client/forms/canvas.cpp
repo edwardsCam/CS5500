@@ -158,10 +158,7 @@ void GameLoopCanvas::OnKeyUp(wxKeyEvent& event)
     break;
 
   case 'M':
-    if (hit_mine_action) {
-      hit_mine_action = false;
-      moves[Direction::MINE] = false;
-    }
+    hit_mine_action = false;
     break;
 
   default:
@@ -244,12 +241,13 @@ void GameLoopCanvas::VectorUpdate(glm::vec3 angle)
         position -= up * player_speed;
         break;
 	  case Direction::MINE:
-		  inventory.addItem(getMineableVoxel());
-		  //render mining action
-		  break;
+        inventory.addItem(getMineableVoxel());
+        //render mining action
+        break;
       }
     }
   }
+  moves[Direction::MINE] = false;
 }
 
 void GameLoopCanvas::OnMouseUpdate(wxMouseEvent& event)
