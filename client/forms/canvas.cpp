@@ -290,9 +290,10 @@ void GameLoopCanvas::OnMouseUpdate(wxMouseEvent& event)
 
 Item GameLoopCanvas::getMineableVoxel() {
 
+	glm::vec3 inFront = position;
 	BlockType block;
 	for (float i = 0.0f; i < 2.0f; i += 0.1f) {
-		glm::vec3 inFront = position + lookat * i;
+		inFront = position + lookat * i;
 		block = (*chunk_manager).get(inFront.x, inFront.y, inFront.z);
 		if (block != BlockType::Inactive) {
 			break;
