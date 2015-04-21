@@ -2,6 +2,7 @@
 // http://fossies.org/dox/wxWidgets-3.0.2/cube_8cpp_source.html
 #include "logger.h"
 #include "canvas.h"
+#include "inventory.h"
 
 BEGIN_EVENT_TABLE(GameLoopCanvas, wxGLCanvas)
 EVT_PAINT(GameLoopCanvas::OnPaint) EVT_KEY_DOWN(GameLoopCanvas::OnKeyDown)
@@ -42,7 +43,8 @@ void GameLoopCanvas::GameInit()
            std::make_pair(Direction::UP, false),
            std::make_pair(Direction::DOWN, false),
            std::make_pair(Direction::RIGHT, false),
-           std::make_pair(Direction::LEFT, false)};
+           std::make_pair(Direction::LEFT, false),
+           std::make_pair(Direction::MINE, false)};
   chunk_manager = std::unique_ptr<ChunkManager>(new ChunkManager());
   CreateChunks();
   position = glm::vec3(3, 4, 3);
@@ -52,6 +54,7 @@ void GameLoopCanvas::GameInit()
   steal_mouse = true;
   mouse_changed = false;
   render_loop_on = false;
+  hit_mine_action = false;
   activateGameLoop(true);
 }
 
@@ -109,6 +112,13 @@ void GameLoopCanvas::OnKeyDown(wxKeyEvent& event)
     steal_mouse = !steal_mouse;
     break;
 
+  case 'M':
+    if (!hit_mine_action) {
+      hit_mine_action = true;
+      moves[Direction::MINE] = true;
+    }
+    break;
+
   default:
     event.Skip();
     return;
@@ -145,6 +155,13 @@ void GameLoopCanvas::OnKeyUp(wxKeyEvent& event)
 
   case WXK_SHIFT:
     moves[Direction::DOWN] = false;
+    break;
+
+  case 'M':
+    if (hit_mine_action) {
+      hit_mine_action = false;
+      moves[Direction::MINE] = false;
+    }
     break;
 
   default:
@@ -226,6 +243,10 @@ void GameLoopCanvas::VectorUpdate(glm::vec3 angle)
       case Direction::DOWN:
         position -= up * player_speed;
         break;
+	  case Direction::MINE:
+		  inventory.addItem(getMineableVoxel());
+		  //render mining action
+		  break;
       }
     }
   }
@@ -265,6 +286,59 @@ void GameLoopCanvas::OnMouseUpdate(wxMouseEvent& event)
       mouse_changed = true;
     }
   }
+}
+
+Item GameLoopCanvas::getMineableVoxel() {
+
+	BlockType block;
+	for (float i = 0.0f; i < 2.0f; i += 0.1f) {
+		glm::vec3 inFront = position + lookat * i;
+		block = (*chunk_manager).get(inFront.x, inFront.y, inFront.z);
+		if (block != BlockType::Inactive) {
+			break;
+		}
+	}
+
+	if (block != BlockType::Inactive) {
+
+		switch (block) {
+		case BlockType::Ground:
+			return Item("Ground");
+		case BlockType::Water:
+			return Item("Water");
+		case BlockType::Sand:
+			return Item("Sand");
+		case BlockType::Wood:
+			return Item("Wood");
+		case BlockType::Flowers:
+			return Item("Flowers");
+		case BlockType::Ruby:
+			return Item("Ruby");
+		case BlockType::Leaves:
+			return Item("Leaves");
+		case BlockType::Stone:
+			return Item("Stone");
+		case BlockType::Grass:
+			return Item("Grass");
+		case BlockType::Brick:
+			return Item("Brick");
+		case BlockType::Party:
+			return Item("Party");
+		case BlockType::Coal:
+			return Item("Coal");
+		case BlockType::Iron:
+			return Item("Iron");
+		case BlockType::Gravel:
+			return Item("Gravel");
+		case BlockType::Diamond:
+			return Item("Diamond");
+		case BlockType::Gold:
+			return Item("Gold");
+		}
+
+		(*chunk_manager).set(inFront, BlockType::Inactive);
+	}
+	return NULL;
 }
 
 void GameLoopCanvas::OnClose(wxCloseEvent& event)

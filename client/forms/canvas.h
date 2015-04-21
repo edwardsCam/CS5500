@@ -13,7 +13,8 @@ enum class Direction
   LEFT,
   RIGHT,
   FORWARD,
-  BACKWARD
+  BACKWARD,
+  MINE
 };
 
 class GameLoopCanvas : public wxGLCanvas
@@ -39,6 +40,7 @@ private:
   void GameInit();
   void VectorUpdate(glm::vec3 angle);
   void OnMouseUpdate(wxMouseEvent& event);
+  Item getMineableVoxel();
 
   void CreateChunks();
 
@@ -47,6 +49,7 @@ private:
   bool steal_mouse;
   bool mouse_changed;
   bool render_loop_on;
+  bool hit_mine_action;
   std::shared_ptr<World> world;
   std::unique_ptr<ChunkManager> chunk_manager;
   std::unique_ptr<IRenderable> object_viewer;
@@ -57,6 +60,7 @@ private:
   glm::vec3 lookat;
   glm::vec3 player_angle;
   std::map<Direction, bool> moves;
+  Inventory inventory;
 
   DECLARE_EVENT_TABLE();
 };

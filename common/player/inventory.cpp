@@ -8,7 +8,7 @@ Inventory::~Inventory()
 }
 bool Inventory::addItem(Item item)
 {
-  if (inventory.size() < capacity)
+  if (inventory.size() < capacity && (&item != nullptr))
   {
     inventory.push_back(item);
     return true;
